@@ -218,3 +218,20 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# =========================================================
+# REFIT dataset files - keep large datasets out of Git
+# =========================================================
+
+data/raw/
+data/cleaned/
+data/processed/
+
+*.7z
+*.zip
+
+# Optional generated model/output folders
+models/
+tmp/
+
+# Generated parquet files
+*.parquet
