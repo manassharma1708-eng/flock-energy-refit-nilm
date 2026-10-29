@@ -2,125 +2,154 @@
 
 ## Executive summary
 
-This project tested whether household smart-meter readings can be used to infer washing-machine activity without installing appliance-level meters.
+This project evaluated whether washing-machine activity can be estimated from whole-home smart-meter measurements without dedicated appliance meters.
 
-Using REFIT data, a gradient-boosting model was trained on Houses 2 and 5, validated on House 6, and tested on the completely unseen House 15.
+The final model used a strict household-level validation design:
 
-On House 15, the model achieved:
+- **Training:** Houses 2, 5, and 15
+- **Validation:** House 6
+- **Final untouched test:** House 19
 
-- F1 score: 0.571
-- MAE: 14.84 W
-- RMSE: 127.66 W
-- washing-machine recall: 0.575
-- washing-machine precision: 0.567
+The model configuration and prediction threshold were fixed before House 19 was evaluated.
 
-The model therefore shows useful ability to detect appliance activity from household-level data, but its appliance-energy estimate was not sufficiently accurate for billing or precise consumption attribution.
+On the final untouched household, the gradient-boosting model achieved:
 
-## Recommended use
+- **Precision:** 0.359
+- **Recall:** 0.497
+- **F1:** 0.417
+- **Active-state MAE:** 109.88 W
+- **Actual washing-machine energy:** 58.52 kWh
+- **Predicted washing-machine energy:** 77.29 kWh
+- **Energy error:** +32.1%
 
-A realistic utility use case is **identifying households that frequently operate flexible appliances during peak-demand periods**.
+The always-off baseline produced a lower overall MAE because the washing machine is inactive for most observations. However, it detected no appliance activity and had -100% energy error.
 
-For example, estimated washing-machine activity could be used to identify customers who frequently run laundry during evening peaks and offer them incentives or personalised messages encouraging off-peak operation.
+The gradient-boosting model therefore provides substantially more useful appliance-level information, despite not having the lowest global MAE.
 
-The model should be used as a behavioural segmentation signal rather than an exact appliance meter.
+## Recommended utility use case
 
-## How to measure success
+The most realistic application is identifying customers who frequently operate flexible appliances during peak-demand periods.
 
-A utility could evaluate the intervention using a randomised control trial.
+For example, a utility could identify households whose estimated washing-machine activity regularly occurs during evening peaks and offer:
 
-Customers identified as frequent peak-period washing-machine users would be split into:
+- off-peak tariff incentives
+- personalised load-shifting recommendations
+- demand-response notifications
+- targeted energy-saving advice
 
-- treatment group receiving an off-peak laundry nudge or tariff incentive
-- control group receiving no intervention
+The model should be treated as an approximate behavioural signal rather than an exact appliance meter.
 
-The primary KPI would be:
+## How to measure whether the intervention works
 
-**share of detected washing-machine cycles starting during the peak period**
+A utility could evaluate the intervention using a randomised controlled trial.
+
+Eligible customers would be divided into:
+
+- a treatment group receiving an off-peak laundry recommendation or incentive
+- a control group receiving no intervention
+
+The primary KPI would be the proportion of detected washing-machine activity occurring during peak-demand periods.
 
 Secondary measures could include:
 
-- estimated peak-period washing-machine kWh
-- change in total household peak demand
-- customer engagement with the message
-- persistence of behaviour change after several weeks
+- estimated washing-machine kWh during peak periods
+- total household peak demand
+- customer engagement
+- persistence of load shifting over time
 
-A pre/post comparison between treatment and control groups would help separate intervention effects from seasonal or household-level changes.
+A successful intervention would reduce peak-period appliance activity relative to the control group without materially reducing customer participation.
 
-## Model limitations
+## Limitations
 
 ### Overlapping appliance signatures
 
-The household aggregate contains the combined demand of many devices.
+Different appliances can create similar changes in whole-home aggregate demand.
 
-Kettles, heaters, dishwashers and other high-power appliances can temporarily resemble parts of a washing-machine cycle.
+A kettle, heater, dishwasher, cooking appliance, or several simultaneous loads may resemble parts of a washing-machine signature.
 
-This produces both false positives and false negatives.
+This creates unavoidable ambiguity when only aggregate power is available.
 
 ### Missing data
 
-The REFIT dataset contains outages and missing measurements.
+REFIT contains missing readings and outages.
 
-The official cleaned dataset also forward-fills some missing readings, which can hide the original structure of outages.
-
-Predictions during poor-quality periods should therefore be treated cautiously.
+Although the analysis excludes or flags unreliable periods, missing information can reduce the reliability of detected events.
 
 ### Household differences
 
-Washing machines differ by model, programme, load size and user behaviour.
+Washing-machine behaviour varies substantially between households because of differences in:
 
-This was visible in the EDA: House 5 had substantially shorter and lower-energy detected cycles than the other selected homes.
+- appliance model
+- wash programme
+- load size
+- user behaviour
+- background household demand
 
-The model also showed different energy-estimation errors between validation House 6 and test House 15, demonstrating that cross-house calibration is difficult.
+This is why performance on an unseen household is lower than performance seen during development.
 
-### UK to India transfer
+### Energy calibration
 
-REFIT contains UK households and appliances.
+The final House 19 energy error was **+32.1%**.
 
-Direct transfer to Indian homes would be risky because of differences in:
+This is substantially better than the simple baselines but is not accurate enough for appliance billing or exact energy attribution.
 
-- appliance brands and washing-machine types
-- top-load versus front-load usage
-- wash programmes
+## Applying UK results to India
+
+REFIT contains UK households.
+
+Direct deployment in India would require local validation because Indian households may differ in:
+
+- top-load versus front-load washing-machine prevalence
+- appliance brands and power profiles
 - household size
-- water-heating behaviour
-- voltage conditions
+- washing frequency
 - appliance ownership
 - electricity tariffs
-- time-of-day usage patterns
+- voltage conditions
+- peak-demand periods
+- time-of-day behaviour
 
-REFIT is therefore useful for demonstrating the methodology, but deployment in India should include Indian household data for calibration and validation.
+The current work should therefore be treated as a methodological demonstration rather than evidence of production-ready performance in India.
 
-## Effect of 15-minute or 30-minute smart-meter data
+A practical next step would be to validate the same pipeline using representative Indian smart-meter and appliance-level data.
 
-The current analysis uses one-minute data.
+## What becomes harder with 15- or 30-minute smart-meter data?
 
-At 15- or 30-minute resolution, short appliance states would be averaged together with other household demand.
+A separate sensitivity experiment tested 1-, 5-, 15-, and 30-minute resolution.
 
-This would make it harder to identify:
+The classification F1 did not decrease monotonically because coarser intervals change the nature of the task. A 30-minute interval can average several appliance states together and may make broad activity classification appear easier.
 
-- cycle start and end times
-- short heating phases
-- transient power changes
+However, lower temporal resolution removes information needed for detailed NILM.
+
+At 15- or 30-minute resolution it becomes harder to identify:
+
+- exact cycle start time
+- exact cycle end time
+- short heating stages
+- low-power phases
+- transient changes
 - overlapping appliance events
-- exact cycle duration
+- precise cycle duration
 
-Energy estimation over longer periods may still be possible, but appliance-event detection would become substantially less precise.
+Energy estimates also remained materially biased.
+
+Therefore 15- and 30-minute data may still support broad behavioural segmentation and demand-response targeting, but precise event reconstruction becomes substantially less reliable.
 
 ## Recommendation
 
-The current approach is suitable for:
+The current model is suitable for further exploration in:
 
-- approximate appliance activity detection
 - behavioural segmentation
+- flexible-load identification
+- peak-demand analysis
 - demand-response targeting
-- peak-load flexibility analysis
 - customer energy insights
 
-It is not yet suitable for:
+It is **not** suitable for:
 
 - appliance-level billing
-- exact per-cycle energy accounting
+- exact cycle-level energy accounting
 - safety-critical decisions
-- high-confidence appliance identification in every household
+- guaranteed appliance identification
 
-The most valuable next step would be to train and validate the model on a larger and more geographically representative set of households, including Indian smart-meter data, before production deployment.
+The strongest next step would be validation across more unseen households and on locally representative Indian smart-meter data.
