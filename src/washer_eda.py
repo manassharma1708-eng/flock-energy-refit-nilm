@@ -16,6 +16,7 @@ HOUSES = {
     5: "Appliance3",
     6: "Appliance2",
     15: "Appliance3",
+    19: "Appliance2",
 }
 
 THRESHOLD_W = 20
