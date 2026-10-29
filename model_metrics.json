@@ -1,0 +1,80 @@
+{
+  "split": {
+    "train_houses": [
+      2,
+      5
+    ],
+    "validation_house": 6,
+    "test_house": 15
+  },
+  "validation": {
+    "always_off": {
+      "MAE_W": 6.992218172913679,
+      "RMSE_W": 102.51721670708334,
+      "Active_MAE_W": 376.0835437757713,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1": 0.0,
+      "True_Energy_kWh": 80.04924438290676,
+      "Pred_Energy_kWh": 0.0,
+      "Energy_Error_pct": -100.0
+    },
+    "hour_profile": {
+      "MAE_W": 25.24560707135052,
+      "RMSE_W": 102.88200565453296,
+      "Active_MAE_W": 344.8746732112654,
+      "Precision": 0.034276860895924556,
+      "Recall": 0.9977254901960785,
+      "F1": 0.06627678280690329,
+      "True_Energy_kWh": 80.04924438290676,
+      "Pred_Energy_kWh": 222.54991760919614,
+      "Energy_Error_pct": 178.01626277026813
+    },
+    "gradient_boosting": {
+      "MAE_W": 15.534090462534753,
+      "RMSE_W": 86.93777053921931,
+      "Active_MAE_W": 273.83432553025375,
+      "Precision": 0.15298929208804282,
+      "Recall": 0.8068235294117647,
+      "F1": 0.25720715089386176,
+      "True_Energy_kWh": 80.04924438290676,
+      "Pred_Energy_kWh": 144.16386115554607,
+      "Energy_Error_pct": 80.09396873998472
+    }
+  },
+  "test": {
+    "always_off": {
+      "MAE_W": 16.66552858403122,
+      "RMSE_W": 169.8428455559483,
+      "Active_MAE_W": 586.0895357866997,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1": 0.0,
+      "True_Energy_kWh": 193.5720588151908,
+      "Pred_Energy_kWh": 0.0,
+      "Energy_Error_pct": -100.0
+    },
+    "hour_profile": {
+      "MAE_W": 34.68096213629592,
+      "RMSE_W": 169.0640142742772,
+      "Active_MAE_W": 562.2715474152618,
+      "Precision": 0.038956596448800354,
+      "Recall": 0.7439611080164076,
+      "F1": 0.07403637060013758,
+      "True_Energy_kWh": 193.5720588151908,
+      "Pred_Energy_kWh": 226.13796089354196,
+      "Energy_Error_pct": 16.823658475132945
+    },
+    "gradient_boosting": {
+      "MAE_W": 14.835245532234797,
+      "RMSE_W": 127.65525427385911,
+      "Active_MAE_W": 435.51552752635087,
+      "Precision": 0.5665071293249576,
+      "Recall": 0.575429179115815,
+      "F1": 0.5709332998367039,
+      "True_Energy_kWh": 193.5720588151908,
+      "Pred_Energy_kWh": 79.96049565425187,
+      "Energy_Error_pct": -58.69212935809469
+    }
+  }
+}
